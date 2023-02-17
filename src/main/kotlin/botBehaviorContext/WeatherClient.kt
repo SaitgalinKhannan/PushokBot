@@ -61,7 +61,7 @@ suspend fun BehaviourContext.weatherInfo() {
 
                 }
                 oldMessageID = message
-                delay(10000)
+                delay(10800000)
             }
         }
     }
