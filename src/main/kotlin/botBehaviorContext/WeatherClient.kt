@@ -5,6 +5,7 @@ import dev.inmo.tgbotapi.extensions.api.deleteMessage
 import dev.inmo.tgbotapi.extensions.api.send.sendTextMessage
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onCommand
+import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onPinnedMessage
 import dev.inmo.tgbotapi.types.IdChatIdentifier
 import dev.inmo.tgbotapi.types.MessageId
 import dev.inmo.tgbotapi.types.message.abstracts.ContentMessage
@@ -48,24 +49,33 @@ suspend fun BehaviourContext.currentWeather() = withContext(Dispatchers.IO) {
 suspend fun BehaviourContext.weatherInfo() {
     CoroutineScope(Dispatchers.IO).launch {
         val weatherClient = WeatherClient()
-        var oldMessageID: MessageId? = null
 
-        onCommand("infinityWeather") {
-            while (true) {
-                oldMessageID?.let { mesId ->  deleteMessage(it.chat.id, mesId) }
-                val message = cityWeather(weatherClient, it.chat.id).messageId
-                pinChatMessage(it.chat.id, message)
+        onCommand("infinityWeather") { commonMessage ->
+            var oldMessageID: MessageId? = null
+
+            while (isActive) {
+                oldMessageID?.let { mesId -> deleteMessage(commonMessage.chat.id, mesId) }
+                val message = cityWeather(weatherClient, commonMessage.chat.id).messageId
+                pinChatMessage(commonMessage.chat.id, message, true)
+                onPinnedMessage {
+
+                }
                 oldMessageID = message
-                delay(3600000)
+                delay(10000)
             }
         }
     }
 }
 
-suspend fun BehaviourContext.cityWeather(weatherClient: WeatherClient, chatId: IdChatIdentifier): ContentMessage<TextContent> {
+suspend fun BehaviourContext.cityWeather(
+    weatherClient: WeatherClient,
+    chatId: IdChatIdentifier,
+): ContentMessage<TextContent> {
     val weather = weatherClient.weather()
-    val sunrise = kotlinx.datetime.Instant.fromEpochMilliseconds((weather.sys.sunrise + weather.timezone) * 1000).toLocalDateTime(TimeZone.UTC).time
-    val sunset = kotlinx.datetime.Instant.fromEpochMilliseconds((weather.sys.sunset + weather.timezone) * 1000).toLocalDateTime(TimeZone.UTC).time
+    val sunrise = kotlinx.datetime.Instant.fromEpochMilliseconds((weather.sys.sunrise + weather.timezone) * 1000)
+        .toLocalDateTime(TimeZone.UTC).time
+    val sunset = kotlinx.datetime.Instant.fromEpochMilliseconds((weather.sys.sunset + weather.timezone) * 1000)
+        .toLocalDateTime(TimeZone.UTC).time
 
     return sendTextMessage(
         chatId,
