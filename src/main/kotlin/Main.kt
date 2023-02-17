@@ -6,7 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
 suspend fun main() {
-    val botToken = "5093518853:AAFuGkXV4NSoTJOe6O02KwnuWWgFX0DMzBQ"
+    val botToken = "5093518853:TelegramBotApiToken"
 
     val bot = telegramBot(botToken)
 
