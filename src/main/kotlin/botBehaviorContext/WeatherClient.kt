@@ -33,7 +33,7 @@ class WeatherClient {
 
     suspend fun weather(): Weather = withContext(Dispatchers.IO) {
         val response =
-            client.get("https://api.openweathermap.org/data/2.5/weather?lat=54.81&lon=56.06&lang=ru&units=metric&appid=$API")
+            client.get("OpenWeathermapApi")
         return@withContext json.decodeFromString<Weather>(response.bodyAsText())
     }
 }
